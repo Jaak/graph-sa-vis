@@ -26,7 +26,7 @@ constexpr float ClosenessWeight = 100;
 constexpr float EdgeDistanceWeight = 1;
 
 constexpr float EdgeFromVertexDistanceWeight = 0;
-constexpr float AngleWeight = 0.1;
+constexpr float AngleWeight = 0;
 
 // SA parameters:
 constexpr float GammaFactor = 0.98;
@@ -81,7 +81,7 @@ inline vec2f sampleCircle() {
 }
 
 inline int randInt(int low, int high) {
-    std::uniform_int_distribution<float> dist(low, high);
+    std::uniform_int_distribution<int> dist(low, high);
     return dist(gen);
 }
 
@@ -168,10 +168,12 @@ struct GraphInstance {
     float vertexEnergy(uint32_t v) const {
         float energy = 0;
 
-        const auto vertWeight = 0.5 * ClosenessWeight / shape->num_vertices;
-        for (uint32_t i = 0; i < shape->num_vertices; ++ i) {
-            if (i != v) {
-                energy += vertWeight / vertSqrDist(v, i);
+        if (ClosenessWeight > 0) {
+            const auto vertWeight = 0.5 * ClosenessWeight / shape->num_vertices;
+            for (uint32_t i = 0; i < shape->num_vertices; ++ i) {
+                if (i != v) {
+                    energy += vertWeight / (0.001 + vertSqrDist(v, i)); // TODO
+                }
             }
         }
 
@@ -183,7 +185,7 @@ struct GraphInstance {
                 const auto sqrDist = sqrDistanceFromLine(
                     vertices[edge.source], vertices[edge.target], vertices[v]);
                 if (sqrDist) {
-                    energy += EdgeFromVertexDistanceWeight / (0.01 + *sqrDist); // TODO
+                    energy += EdgeFromVertexDistanceWeight / (0.001 + *sqrDist); // TODO
                 }
             }
         }
