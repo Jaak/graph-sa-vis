@@ -81,6 +81,30 @@ inline std::vector<uint32_t> choose(uint32_t n, uint32_t k) {
     return result;
 }
 
+inline std::vector<Edge> mkHypercubeEdges(uint32_t dim) {
+    if (dim == 0) {
+        return std::vector<Edge>{};
+    }
+
+    std::vector<Edge> result;
+    const auto es = mkHypercubeEdges(dim - 1);
+    const auto n = 1u << (dim - 1);
+    for (auto e : es) {
+        result.push_back(e);
+        result.emplace_back(e.source + n, e.target + n);
+    }
+
+    for (uint32_t i = 0; i < n; ++ i) {
+        result.emplace_back(i, i + n);
+    }
+
+    return result;
+}
+
+inline GraphShape GraphShape::hypercube(uint32_t dim) {
+    return GraphShape {1u << dim, mkHypercubeEdges(dim) };
+}
+
 inline GraphShape GraphShape::tesselation(uint32_t n) {
     std::vector<Edge> edges;
     uint32_t prevNode = 0;
