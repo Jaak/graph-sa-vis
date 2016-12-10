@@ -11,7 +11,7 @@ The code is very experimental.
 ## Building
 
 ```bash
-clang -Wall -O2 -std=c++11 main.cpp `pkg-config --cflags --libs cairo`
+clang++ -Wall -O2 -std=c++11 main.cpp `pkg-config --cflags --libs cairo`
 ```
 
 ## TODO
