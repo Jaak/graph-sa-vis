@@ -23,4 +23,6 @@ clang++ -Wall -O2 -std=c++11 main.cpp `pkg-config --cflags --libs cairo`
 4. [ ] Faster energy evaluation. Needs some acceleration structure.
     * [ ] In most cases we don't have to check vertex against every other.
     * [ ] Maybe it's possible to avoid having to check edge against every other.
+    * [ ] Alternatively, SIMD can offer near 4 fold speedup.
 5. [ ] Thread safe and faster random numbers.
+6. [ ] Structure the code better.
