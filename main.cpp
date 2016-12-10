@@ -89,6 +89,8 @@ inline int randInt(int low, int high) {
  * Some math support *
  *********************/
 
+ inline float sqr(float x) { return x*x; }
+
 template <typename Iter>
 typename std::iterator_traits<Iter>::value_type variance(Iter begin, Iter end) {
     const auto size = std::distance(begin, end);
@@ -331,7 +333,7 @@ anneal_result anneal(GraphInstance s) {
             M2 += delta*delta2;
         }
 
-        if (M2 / (n - 1) < 0.01f) {
+        if (M2 < (n - 1) * 1e-5f) {
             break;
         }
 

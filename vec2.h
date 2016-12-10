@@ -1,12 +1,13 @@
 #pragma once
 
 #include <cmath>
-
 #include <boost/optional.hpp>
+#include <type_traits>
 
-// TODO: generalize
-
-template <typename T>
+template <
+    typename T,
+    typename = typename std::enable_if<std::is_floating_point<T>::value>::type
+>
 struct vec2 {
     T x;
     T y;
@@ -14,28 +15,41 @@ struct vec2 {
     vec2(T x, T y)
         : x(x), y(y)
     { }
+
+    friend inline vec2 operator + (vec2 u, vec2 v) { return {u.x + v.x, u.y + v.y}; }
+    friend inline vec2 operator - (vec2 u) { return {- u.x, - u.y}; }
+    friend inline vec2 operator - (vec2 u, vec2 v) { return {u.x - v.x, u.y - v.y}; }
+    friend inline vec2 operator * (T s, vec2 v) { return {s * v.x, s * v.y}; }
+    friend inline vec2 operator * (vec2 u, T s) { return {u.x * s, u.y * s}; }
+    friend inline vec2 operator / (vec2 u, T s) { return {u.x / s, u.y / s}; }
 };
 
-using vec2f = vec2<float>;
+template <typename T>
+inline float dot(vec2<T> u, vec2<T> v) { return u.x*v.x + u.y*v.y; }
 
-inline float sqr(float x) { return x*x; }
-inline vec2f operator + (vec2f u, vec2f v) { return {u.x + v.x, u.y + v.y}; }
-inline vec2f operator - (vec2f u) { return {- u.x, - u.y}; }
-inline vec2f operator - (vec2f u, vec2f v) { return {u.x - v.x, u.y - v.y}; }
-inline vec2f operator * (float s, vec2f v) { return {s * v.x, s * v.y}; }
-inline vec2f operator * (vec2f u, float s) { return {u.x * s, u.y * s}; }
-inline vec2f operator / (vec2f u, float s) { return {u.x / s, u.y / s}; }
-inline float dot(vec2f u, vec2f v) { return u.x*v.x + u.y*v.y; }
-inline float cross(vec2f u, vec2f v) { return u.x*v.y - u.y*v.x; }
-inline float sqrlen(vec2f u) { return dot(u, u); }
-inline float len(vec2f u) { return std::sqrt(sqrlen(u)); }
-inline vec2f normalised(vec2f u) { return u / len(u); }
-inline float sqrdist(vec2f u, vec2f v) { return sqrlen(u - v); }
-inline float dist(vec2f u, vec2f v) { return std::sqrt(sqrdist(u, v)); }
+template <typename T>
+inline float cross(vec2<T> u, vec2<T> v) { return u.x*v.y - u.y*v.x; }
+
+template <typename T>
+inline float sqrlen(vec2<T> u) { return dot(u, u); }
+
+template <typename T>
+inline float len(vec2<T> u) { return std::sqrt(sqrlen(u)); }
+
+template <typename T>
+inline vec2<T> normalised(vec2<T> u) { return u / len(u); }
+
+template <typename T>
+inline float sqrdist(vec2<T> u, vec2<T> v) { return sqrlen(u - v); }
+
+template <typename T>
+inline float dist(vec2<T> u, vec2<T> v) { return std::sqrt(sqrdist(u, v)); }
+
 
 // Checks if point q lies parallel to the line segment [p1, p2].
 // If so, returns the square of its distance from the line.
-inline boost::optional<float> sqrDistanceFromLine(vec2f p1, vec2f p2, vec2f q) {
+template <typename T>
+inline boost::optional<T> sqrDistanceFromLine(vec2<T> p1, vec2<T> p2, vec2<T> q) {
     const auto u = normalised(p2 - p1);
     
     auto v1 = q - p1;
@@ -57,15 +71,14 @@ inline boost::optional<float> sqrDistanceFromLine(vec2f p1, vec2f p2, vec2f q) {
 }
 
 inline int mysign(float x) {
-    if (x == 0)
-        return 0;
-    return x > 0 ? 1 : 2;
+    return x == 0 ? 0 : (x > 0 ? 1 : 2);
 }
 
 #define ON_SEGMENT(p, q, r) (q.x <= std::fmax(p.x, r.x) && q.x >= std::fmin(p.x, r.x) && q.y <= std::fmax(p.y, r.y) && q.y >= std::fmin(p.y, r.y))
 #define ORIENTATION(p, q, r) mysign((q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y))
 
-inline bool intersects(vec2f p1, vec2f q1, vec2f p2, vec2f q2) {
+template <typename T>
+inline bool intersects(vec2<T> p1, vec2<T> q1, vec2<T> p2, vec2<T> q2) {
     const auto o1 = ORIENTATION(p1, q1, p2);
     const auto o2 = ORIENTATION(p1, q1, q2);
     const auto o3 = ORIENTATION(p2, q2, p1);
@@ -82,3 +95,6 @@ inline bool intersects(vec2f p1, vec2f q1, vec2f p2, vec2f q2) {
 
 #undef ON_SEGMENT
 #undef ORIENTATION
+
+using vec2f = vec2<float>;
+using vec2d = vec2<double>;
