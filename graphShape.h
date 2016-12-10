@@ -69,7 +69,7 @@ public: /* Static methods: */
     static GraphShape ladder(uint32_t height, uint32_t n);
 
     template <typename Sampler>
-    static GraphShape random(uint32_t n, Sampler sampler);
+    static GraphShape erModel(uint32_t n, Sampler sampler);
 
     template <typename UniformSampler>
     static GraphShape ba1Model(uint32_t n, UniformSampler sample01);
@@ -250,6 +250,7 @@ inline GraphShape GraphShape::ladder(uint32_t height, uint32_t n) {
     return GraphShape {num_vertices, edges};
 }
 
+// Barabási–Albert model (with m = 1 and m0 = 1)
 template <typename UniformSampler>
 inline GraphShape GraphShape::ba1Model(uint32_t n, UniformSampler sample01) {
 
@@ -257,12 +258,13 @@ inline GraphShape GraphShape::ba1Model(uint32_t n, UniformSampler sample01) {
     std::vector<Edge> edges;
     uint32_t sumDegrees = 0;
 
-    // Add first edge:
+    // Add first two nodes:
     edges.emplace_back(0, 1);
     sumDegrees = 2;
     degrees[0] = 1;
     degrees[1] = 1;
 
+    // Add rest of the nodes:
     for (uint32_t i = 2; i < n; ++ i) {
         const auto x = sample01();
         uint32_t acc = 0;
@@ -281,8 +283,9 @@ inline GraphShape GraphShape::ba1Model(uint32_t n, UniformSampler sample01) {
     return GraphShape {n, edges};
 }
 
+// Erdős–Rényi model
 template <typename Sampler>
-inline GraphShape GraphShape::random(uint32_t n, Sampler sampler) {
+inline GraphShape GraphShape::erModel(uint32_t n, Sampler sampler) {
     std::vector<Edge> edges;
     for (uint32_t i = 0; i < n; ++ i) {
         for (uint32_t j = i + 1; j < n; ++ j) {
