@@ -172,7 +172,7 @@ struct GraphInstance {
             const auto vertWeight = 0.5 * ClosenessWeight / shape->num_vertices;
             for (uint32_t i = 0; i < shape->num_vertices; ++ i) {
                 if (i != v) {
-                    energy += vertWeight / (0.001 + vertSqrDist(v, i)); // TODO
+                    energy += vertWeight / (1 + vertSqrDist(v, i));
                 }
             }
         }
@@ -185,7 +185,7 @@ struct GraphInstance {
                 const auto sqrDist = sqrDistanceFromLine(
                     vertices[edge.source], vertices[edge.target], vertices[v]);
                 if (sqrDist) {
-                    energy += EdgeFromVertexDistanceWeight / (0.001 + *sqrDist); // TODO
+                    energy += EdgeFromVertexDistanceWeight / (1 + *sqrDist);
                 }
             }
         }
