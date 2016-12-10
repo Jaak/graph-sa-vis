@@ -67,6 +67,12 @@ public: /* Static methods: */
     static GraphShape complete(uint32_t n) { return kneser(n, 1); }
     static GraphShape circle(uint32_t n);
     static GraphShape ladder(uint32_t height, uint32_t n);
+
+    template <typename Sampler>
+    static GraphShape random(uint32_t n, Sampler sampler);
+
+    template <typename UniformSampler>
+    static GraphShape ba1Model(uint32_t n, UniformSampler sample01);
 };
 
 inline std::vector<uint32_t> choose(uint32_t n, uint32_t k) {
@@ -242,4 +248,49 @@ inline GraphShape GraphShape::ladder(uint32_t height, uint32_t n) {
     }
 
     return GraphShape {num_vertices, edges};
+}
+
+template <typename UniformSampler>
+inline GraphShape GraphShape::ba1Model(uint32_t n, UniformSampler sample01) {
+
+    std::vector<uint32_t> degrees (n, 0);
+    std::vector<Edge> edges;
+    uint32_t sumDegrees = 0;
+
+    // Add first edge:
+    edges.emplace_back(0, 1);
+    sumDegrees = 2;
+    degrees[0] = 1;
+    degrees[1] = 1;
+
+    for (uint32_t i = 2; i < n; ++ i) {
+        const auto x = sample01();
+        uint32_t acc = 0;
+        for (uint32_t j = 0; j < i; ++ j) {
+            acc += degrees[j];
+            if (x * sumDegrees <= acc) {
+                edges.emplace_back(j, i);
+                sumDegrees += 2;
+                degrees[i] += 1;
+                degrees[j] += 1;
+                break;
+            }
+        }
+    }
+
+    return GraphShape {n, edges};
+}
+
+template <typename Sampler>
+inline GraphShape GraphShape::random(uint32_t n, Sampler sampler) {
+    std::vector<Edge> edges;
+    for (uint32_t i = 0; i < n; ++ i) {
+        for (uint32_t j = i + 1; j < n; ++ j) {
+            if (sampler()) {
+                edges.emplace_back(i, j);
+            }
+        }
+    }
+
+    return GraphShape {n, edges};
 }
