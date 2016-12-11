@@ -70,31 +70,31 @@ inline boost::optional<T> sqrDistanceFromLine(vec2<T> p1, vec2<T> p2, vec2<T> q)
     return lSqr * (1 - cosA*cosA);
 }
 
-inline int mysign(float x) {
-    return x == 0 ? 0 : (x > 0 ? 1 : 2);
-}
-
-#define ON_SEGMENT(p, q, r) (q.x <= std::fmax(p.x, r.x) && q.x >= std::fmin(p.x, r.x) && q.y <= std::fmax(p.y, r.y) && q.y >= std::fmin(p.y, r.y))
-#define ORIENTATION(p, q, r) mysign((q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y))
-
 template <typename T>
 inline bool intersects(vec2<T> p1, vec2<T> q1, vec2<T> p2, vec2<T> q2) {
-    const auto o1 = ORIENTATION(p1, q1, p2);
-    const auto o2 = ORIENTATION(p1, q1, q2);
-    const auto o3 = ORIENTATION(p2, q2, p1);
-    const auto o4 = ORIENTATION(p2, q2, q1);
+    const auto orientation = [](vec2<T> p, vec2<T> q, vec2<T> r) {
+        const auto t = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+        return t == 0 ? 0 : (t > 0 ? 1 : 2); ;
+    };
+
+    const auto onSegment = [](vec2<T> p, vec2<T> q, vec2<T> r) {
+        return q.x <= std::fmax(p.x, r.x) && q.x >= std::fmin(p.x, r.x) &&
+               q.y <= std::fmax(p.y, r.y) && q.y >= std::fmin(p.y, r.y);
+    };
+
+    const auto o1 = orientation(p1, q1, p2);
+    const auto o2 = orientation(p1, q1, q2);
+    const auto o3 = orientation(p2, q2, p1);
+    const auto o4 = orientation(p2, q2, q1);
 
     bool intersect = false;
     intersect |= (o1 != o2 && o3 != o4);
-    intersect |= (o1 == 0 && ON_SEGMENT(p1, p2, q1));
-    intersect |= (o2 == 0 && ON_SEGMENT(p1, q2, q1));
-    intersect |= (o3 == 0 && ON_SEGMENT(p2, p1, q2));
-    intersect |= (o4 == 0 && ON_SEGMENT(p2, q1, q2));
+    intersect |= (o1 == 0 && onSegment(p1, p2, q1));
+    intersect |= (o2 == 0 && onSegment(p1, q2, q1));
+    intersect |= (o3 == 0 && onSegment(p2, p1, q2));
+    intersect |= (o4 == 0 && onSegment(p2, q1, q2));
     return intersect;
 }
-
-#undef ON_SEGMENT
-#undef ORIENTATION
 
 using vec2f = vec2<float>;
 using vec2d = vec2<double>;
