@@ -19,6 +19,7 @@ using namespace std::chrono;
 // Distances given in centimeters:
 constexpr float BoundingBoxWidth = 30;
 constexpr float BoundingBoxHeight = 20;
+constexpr float BoxPadding = 0.5;
 
 // SA Weights:
 constexpr float CrossingWeight = 0.3;
@@ -174,7 +175,7 @@ struct GraphInstance {
             const auto vertWeight = 0.5 * ClosenessWeight / shape->num_vertices;
             for (uint32_t i = 0; i < shape->num_vertices; ++ i) {
                 if (i != v) {
-                    energy += vertWeight / (1 + vertSqrDist(v, i));
+                    energy += vertWeight / (0.001 + vertSqrDist(v, i));
                 }
             }
         }
@@ -187,7 +188,7 @@ struct GraphInstance {
                 const auto sqrDist = sqrDistanceFromLine(
                     vertices[edge.source], vertices[edge.target], vertices[v]);
                 if (sqrDist) {
-                    energy += EdgeFromVertexDistanceWeight / (1 + *sqrDist);
+                    energy += EdgeFromVertexDistanceWeight / (0.001 + *sqrDist);
                 }
             }
         }
@@ -232,8 +233,8 @@ struct GraphInstance {
 
 
 GraphInstance GraphInstance::randomised(const GraphShape& shape) {
-    std::uniform_real_distribution<float> xDist(0, BoundingBoxWidth);
-    std::uniform_real_distribution<float> yDist(0, BoundingBoxHeight);
+    std::uniform_real_distribution<float> xDist(BoxPadding, BoundingBoxWidth - BoxPadding);
+    std::uniform_real_distribution<float> yDist(BoxPadding, BoundingBoxHeight - BoxPadding);
 
     std::vector<vec2f> coords;
     coords.reserve(shape.num_vertices);
@@ -255,10 +256,11 @@ GraphInstance neighbour(GraphInstance inst, float radius) {
     const auto i = randInt(0, inst.vertices.size() - 1);
     auto& vertex = inst.vertices[i];
     for (;;) {
-        // const auto a = randFloat(0, 2 * M_PI);
-        const auto d = radius * sampleCircle(); // vec2f(std::cos(a), std::sin(a));
+        const auto d = radius * sampleCircle();
         const auto p = vertex + d;
-        if (p.x >= 0 && p.x < BoundingBoxWidth && p.y >= 0 && p.y < BoundingBoxHeight) {
+        if (p.x >= BoxPadding && p.x + BoxPadding < BoundingBoxWidth &&
+            p.y >= BoxPadding && p.y + BoxPadding < BoundingBoxHeight)
+        {
             inst.update(i, p);
             break;
         }
