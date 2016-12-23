@@ -32,3 +32,9 @@ make -j4
 5. [ ] Thread safe and faster random numbers.
 6. [x] Structure the code better.
 7. [x] Build system.
+
+## Example drawings
+
+![Barabási–Albert model](https://raw.githubusercontent.com/Jaak/graph-sa-vis/master/examples/BA-mode-100.png)
+![Erdős–Rényi model](https://raw.githubusercontent.com/Jaak/graph-sa-vis/master/examples/ER-model-200.png)
+![Binary tree](https://raw.githubusercontent.com/Jaak/graph-sa-vis/master/examples/complete-binary-tree.png)
