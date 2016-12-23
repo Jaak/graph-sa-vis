@@ -32,6 +32,7 @@ make -j4
 5. [ ] Thread safe and faster random numbers.
 6. [x] Structure the code better.
 7. [x] Build system.
+8. [ ] Usage instructions on github.
 
 ## Example drawings
 
