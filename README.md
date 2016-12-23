@@ -10,8 +10,13 @@ Some examples of drawn graphs can be found under the `examples` directory.
 
 ## Building
 
+CMake and cairo are required.
+
 ```bash
-clang++ -Wall -O2 -std=c++11 main.cpp `pkg-config --cflags --libs cairo`
+mkdir b
+cd b
+cmake ..
+make -j4
 ```
 
 ## TODO
@@ -25,4 +30,5 @@ clang++ -Wall -O2 -std=c++11 main.cpp `pkg-config --cflags --libs cairo`
     * [ ] Maybe it's possible to avoid having to check edge against every other.
     * [ ] Alternatively, SIMD can offer near 4 fold speedup.
 5. [ ] Thread safe and faster random numbers.
-6. [ ] Structure the code better.
+6. [x] Structure the code better.
+7. [x] Build system.
