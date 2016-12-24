@@ -5,8 +5,19 @@
 
 #include <vector>
 
+
+
 // TODO: better name
 struct GraphInstance {
+public: /* Types: */
+
+    struct Delta {
+        float energyDelta;
+        uint32_t vertex;
+        vec2f position;
+    };
+
+public: /* Fields: */
     const Graph* gr;
     std::vector<vec2f> positions;
     std::vector<float> energies;
@@ -16,11 +27,13 @@ public: /* Methods: */
 
     GraphInstance(const Graph& s, std::vector<vec2f> verts);
     static GraphInstance randomised(const Graph& gr);
-    GraphInstance neighbour(float radius) const;
+
+    Delta neighbour(float radius);
+    void commit(const Delta& delta);
 
 private: /* Methods: */
     float vertSqrDist(uint32_t s, uint32_t t) const;
     float edgeEnergy(Edge e) const;
     float vertexEnergy(uint32_t v) const;
-    void update(uint32_t v, vec2f coord);
+    float computeEnergyDelta(uint32_t v, vec2f coord);
 };

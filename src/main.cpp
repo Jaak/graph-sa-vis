@@ -44,8 +44,8 @@ int main() {
 
     // const auto gr = Graph::lines(100);
     // const auto gr = Graph::points(200);
-    // const auto gr = Graph::repeat(Graph::line(5), 200);
-    const auto gr = Graph::repeat(Graph::circle(4), 5);
+    // const auto gr = Graph::repeat(Graph::line(3), 100);
+    const auto gr = Graph::repeat(Graph::circle(3), 20);
     // const auto gr = Graph::ladder(2, 7); 
 
     const auto result = anneal(gr);

@@ -29,15 +29,6 @@ GraphInstance::GraphInstance(const Graph& graph, std::vector<vec2f> pos)
     }
 }
 
-void GraphInstance::update(uint32_t v, vec2f coord) {
-    positions[v] = coord;
-    const auto oldEnergy = energies[v];
-    const auto newEnergy = vertexEnergy(v);
-    energies[v] = newEnergy;
-    totalEnergy -= oldEnergy;
-    totalEnergy += newEnergy;
-}
-
 float GraphInstance::vertSqrDist(uint32_t s, uint32_t t) const {
     return sqrdist(positions[s], positions[t]);
 }
@@ -142,20 +133,35 @@ GraphInstance GraphInstance::randomised(const Graph& gr) {
     return GraphInstance {gr, coords};
 }
 
-GraphInstance GraphInstance::neighbour(float radius) const {
-    GraphInstance result = *this;
-    const auto i = randInt(0, result.positions.size() - 1);
-    auto& vertex = result.positions[i];
+// TODO: avoid mutating the state
+float GraphInstance::computeEnergyDelta(uint32_t v, vec2f pos) {
+    const auto oldPos = positions[v];
+    const auto oldEnergy = energies[v];
+
+    positions[v] = pos;
+    const auto newEnergy = vertexEnergy(v);
+    positions[v] = oldPos;
+    const auto delta = newEnergy - oldEnergy;
+    return delta;
+}
+
+void GraphInstance::commit(const GraphInstance::Delta& delta) {
+    positions[delta.vertex] = delta.position;
+    energies[delta.vertex] += delta.energyDelta;
+    totalEnergy += delta.energyDelta;
+}
+
+GraphInstance::Delta GraphInstance::neighbour(float radius) {
+    const uint32_t i = randInt(0, positions.size() - 1);
+    const auto pos = positions[i];
     for (;;) {
         const auto d = radius * sampleCircle();
-        const auto p = vertex + d;
+        const auto p = pos + d;
         if (p.x >= BoxPadding && p.x + BoxPadding < BoundingBoxWidth &&
             p.y >= BoxPadding && p.y + BoxPadding < BoundingBoxHeight)
         {
-            result.update(i, p);
-            break;
+            const auto energyDelta = computeEnergyDelta(i, p);
+            return { energyDelta, i, p };
         }
     }
-
-    return result;
 }

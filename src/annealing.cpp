@@ -10,11 +10,11 @@ using namespace std::chrono;
 
 namespace /* anonymous */ {
 
-inline float acceptanceP(float e0, float e1, float T) {
-    if (e1 < e0)
-        return 1;
+inline float acceptanceP(float delta, float T) {
+    if (delta < 0.0f)
+        return 1.0f;
     else
-        return std::exp(-(e1 - e0)/T);
+        return std::exp(-delta/T);
 }
 
 std::vector<event_type<float>> trackEvents(float& e, std::atomic_bool& running) {
@@ -66,18 +66,17 @@ anneal_result anneal(GraphInstance s) {
         float mean = 0.0f;
         float M2 = 0.0f;
         for (uint step = 0; step < limit; ++ step, ++ totalCount) {
-            auto s1 = s.neighbour(R);
-            const auto e1 = s1.totalEnergy;
-            if (acceptanceP(e, e1, T) >= randFloat(0, 1)) {
-                s = std::move(s1);
-                e = e1;
+            const auto delta = s.neighbour(R);
+            if (acceptanceP(delta.energyDelta, T) >= randFloat(0.0f, 1.0f)) {
+                s.commit(delta);
+                e = s.totalEnergy;
             }
 
             n += 1;
-            const auto delta = e - mean;
-            mean += delta / n;
-            const auto delta2 = e - mean;
-            M2 += delta*delta2;
+            const auto d = e - mean;
+            mean += d / n;
+            const auto d2 = e - mean;
+            M2 += d*d2;
         }
 
         if (M2 < (n - 1) * 1e-5f) {
