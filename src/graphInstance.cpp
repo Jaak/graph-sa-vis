@@ -1,6 +1,6 @@
-#include "options.h"
+#include "graph.h"
 #include "graphInstance.h"
-#include "graphShape.h"
+#include "options.h"
 #include "random.h"
 
 #include <iterator>
@@ -17,13 +17,13 @@ typename std::iterator_traits<Iter>::value_type variance(Iter begin, Iter end) {
     return variance;
 }
 
-GraphInstance::GraphInstance(const GraphShape& s, std::vector<vec2f> pos)
-    : shape(&s)
+GraphInstance::GraphInstance(const Graph& graph, std::vector<vec2f> pos)
+    : gr(&graph)
     , positions(std::move(pos))
-    , energies(shape->num_vertices, 0.0f)
+    , energies(gr->num_vertices, 0.0f)
     , totalEnergy(0)
 {
-    for (uint32_t i = 0; i < shape->num_vertices; ++ i) {
+    for (uint32_t i = 0; i < gr->num_vertices; ++ i) {
         const auto e = vertexEnergy(i);
         energies[i] = e;
         totalEnergy += e;
@@ -46,11 +46,11 @@ float GraphInstance::vertSqrDist(uint32_t s, uint32_t t) const {
 float GraphInstance::edgeEnergy(Edge e) const {
     float energy = 0;
 
-    const auto edgeWeight = EdgeDistanceWeight * shape->num_vertices / shape->edges.size();
+    const auto edgeWeight = EdgeDistanceWeight * gr->num_vertices / gr->edges.size();
     energy += edgeWeight*vertSqrDist(e.source, e.target);
 
-    for (size_t j = 0; j < shape->edges.size(); ++ j) {
-        const auto e2 = shape->edges[j];
+    for (size_t j = 0; j < gr->edges.size(); ++ j) {
+        const auto e2 = gr->edges[j];
         if (e.source == e2.source || e.source == e2.target ||
             e.target == e2.source || e.target == e2.target) {
             continue;
@@ -73,8 +73,8 @@ float GraphInstance::vertexEnergy(uint32_t v) const {
     float energy = 0;
 
     if (ClosenessWeight > 0) {
-        const auto vertWeight = 0.5 * ClosenessWeight / shape->num_vertices;
-        for (uint32_t i = 0; i < shape->num_vertices; ++ i) {
+        const auto vertWeight = 0.5 * ClosenessWeight / gr->num_vertices;
+        for (uint32_t i = 0; i < gr->num_vertices; ++ i) {
             if (i != v) {
                 energy += vertWeight / (0.001 + vertSqrDist(v, i));
             }
@@ -82,7 +82,7 @@ float GraphInstance::vertexEnergy(uint32_t v) const {
     }
 
     if (EdgeFromVertexDistanceWeight > 0) {
-        for (auto edge : shape->edges) {
+        for (auto edge : gr->edges) {
             if (edge.source == v || edge.target == v)
                 continue;
 
@@ -94,25 +94,25 @@ float GraphInstance::vertexEnergy(uint32_t v) const {
         }
     }
 
-    const auto begin = shape->nOffsets[v];
-    const auto end = shape->nOffsets[v + 1];
+    const auto begin = gr->nOffsets[v];
+    const auto end = gr->nOffsets[v + 1];
     assert(begin <= end);
     const auto n = end - begin;
 
     for (uint32_t i = begin; i < end; ++ i) {
-        energy += 0.5*edgeEnergy(Edge(v, shape->neighbours[i]));
+        energy += 0.5*edgeEnergy(Edge(v, gr->neighbours[i]));
     }
 
     if (AngleWeight > 0 && n >= 2) {
         const auto p0 = positions[v];
-        const auto p1 = positions[shape->neighbours[begin]];
+        const auto p1 = positions[gr->neighbours[begin]];
         const auto u = normalised(p1 - p0);
 
         std::vector<float> angles;
         angles.reserve(n);
         angles.push_back(2*M_PI);
         for (uint32_t j = begin + 1; j < end; ++ j) {
-            const auto pj = positions[shape->neighbours[j]];
+            const auto pj = positions[gr->neighbours[j]];
             const auto v = normalised(pj - p0);
             auto a = std::atan2(cross(u, v) , dot(u, v));
             if (a < 0) a += 2*M_PI;
@@ -131,15 +131,15 @@ float GraphInstance::vertexEnergy(uint32_t v) const {
     return energy;
 }
 
-GraphInstance GraphInstance::randomised(const GraphShape& shape) {
+GraphInstance GraphInstance::randomised(const Graph& gr) {
     std::vector<vec2f> coords;
-    coords.reserve(shape.num_vertices);
-    for (size_t i = 0; i < shape.num_vertices; ++ i) {
+    coords.reserve(gr.num_vertices);
+    for (size_t i = 0; i < gr.num_vertices; ++ i) {
         coords.emplace_back(randFloat(BoxPadding, BoundingBoxWidth - BoxPadding),
                             randFloat(BoxPadding, BoundingBoxHeight - BoxPadding));
     }
 
-    return GraphInstance {shape, coords};
+    return GraphInstance {gr, coords};
 }
 
 GraphInstance neighbour(GraphInstance inst, float radius) {

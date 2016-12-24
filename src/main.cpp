@@ -1,8 +1,8 @@
-#include <cairo/cairo.h>
-
-#include "graphShape.h"
 #include "annealing.h"
+#include "graph.h"
 #include "view.h"
+
+#include <cairo/cairo.h>
 
 
 /************************
@@ -27,28 +27,28 @@ void ctrlHandleEnergyPlotDraw(Controller* ctrl, ciaro_t* cr, int width, int heig
 
 
 int main() {
-    // const auto shape = GraphShape::grid(10, 10);
-    // const auto shape = GraphShape::tesselation(10);
-    // const auto shape = GraphShape::tree(5, 2);
-    // const auto shape = GraphShape::kneser(9, 1);
-    // const auto shape = GraphShape::circle(6);
-    // const auto shape = GraphShape::hypercube(4);
+    // const auto gr = Graph::grid(10, 10);
+    // const auto gr = Graph::tesselation(10);
+    // const auto gr = Graph::tree(5, 2);
+    // const auto gr = Graph::kneser(9, 1);
+    // const auto gr = Graph::circle(6);
+    // const auto gr = Graph::hypercube(4);
     
-    // const auto shape = GraphShape::erModel(200, []() -> bool {
+    // const auto gr = Graph::erModel(200, []() -> bool {
     //     return randFloat(0.0f, 1.0f) < 0.006f;
     // });
 
-    // const auto shape = GraphShape::ba1Model(100, []() -> float {
+    // const auto gr = Graph::ba1Model(100, []() -> float {
     //     return randFloat(0.0f, 1.0f);
     // });
 
-    // const auto shape = GraphShape::lines(100);
-    // const auto shape = GraphShape::points(200);
-    // const auto shape = GraphShape::repeat(GraphShape::line(5), 200);
-    const auto shape = GraphShape::repeat(GraphShape::circle(4), 5);
-    // const auto shape = GraphShape::ladder(2, 7); 
+    // const auto gr = Graph::lines(100);
+    // const auto gr = Graph::points(200);
+    // const auto gr = Graph::repeat(Graph::line(5), 200);
+    const auto gr = Graph::repeat(Graph::circle(4), 5);
+    // const auto gr = Graph::ladder(2, 7); 
 
-    const auto result = anneal(shape);
+    const auto result = anneal(gr);
 
     {
         const auto width = 800;

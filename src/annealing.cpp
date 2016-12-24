@@ -37,7 +37,7 @@ std::vector<event_type<float>> trackEvents(float& e, std::atomic_bool& running) 
 anneal_result anneal(GraphInstance s) {
     auto e = s.totalEnergy;
     auto T = InitialTemperature;
-    const auto n = s.shape->num_vertices;
+    const auto n = s.gr->num_vertices;
     float R = 2.0f * std::min(BoundingBoxHeight, BoundingBoxWidth) / std::sqrt(n);
 
     std::cout << "InitialEnergy: " << e << std::endl;
@@ -102,6 +102,6 @@ anneal_result anneal(GraphInstance s) {
     return {s, energies};
 }
 
-anneal_result anneal(const GraphShape& shape) {
-    return anneal(GraphInstance::randomised(shape));
+anneal_result anneal(const Graph& gr) {
+    return anneal(GraphInstance::randomised(gr));
 }

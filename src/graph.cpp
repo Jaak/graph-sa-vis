@@ -1,29 +1,6 @@
-#include "graphShape.h"
+#include "graph.h"
 
-
-GraphShape::GraphShape(size_t n, std::vector<Edge> es)
-    : num_vertices(n)
-    , edges(std::move(es))
-{
-    nOffsets.resize(n + 1, 0);
-    neighbours.resize(2 * edges.size(), 0);
-
-    // Count the number of outgoing edges:
-    for (auto edge : edges) {
-        nOffsets[1 + edge.source] ++;
-        nOffsets[1 + edge.target] ++;
-    }
-
-    for (uint32_t i = 0; i < n; ++ i) {
-        nOffsets[i+1] += nOffsets[i];
-    }
-
-    std::vector<uint32_t> index = nOffsets;
-    for (auto edge : edges) {
-        neighbours[index[edge.source] ++] = edge.target;
-        neighbours[index[edge.target] ++] = edge.source;
-    }
-}
+namespace /* anonymous */ {
 
 inline std::vector<uint32_t> choose(uint32_t n, uint32_t k) {
     if (k == 0) return {0};
@@ -57,11 +34,37 @@ inline std::vector<Edge> mkHypercubeEdges(uint32_t dim) {
     return result;
 }
 
-GraphShape GraphShape::hypercube(uint32_t dim) {
-    return GraphShape {1u << dim, mkHypercubeEdges(dim) };
+} // namespace anonymous
+
+Graph::Graph(size_t n, std::vector<Edge> es)
+    : num_vertices(n)
+    , edges(std::move(es))
+{
+    nOffsets.resize(n + 1, 0);
+    neighbours.resize(2 * edges.size(), 0);
+
+    // Count the number of outgoing edges:
+    for (auto edge : edges) {
+        nOffsets[1 + edge.source] ++;
+        nOffsets[1 + edge.target] ++;
+    }
+
+    for (uint32_t i = 0; i < n; ++ i) {
+        nOffsets[i+1] += nOffsets[i];
+    }
+
+    std::vector<uint32_t> index = nOffsets;
+    for (auto edge : edges) {
+        neighbours[index[edge.source] ++] = edge.target;
+        neighbours[index[edge.target] ++] = edge.source;
+    }
 }
 
-GraphShape GraphShape::tesselation(uint32_t n) {
+Graph Graph::hypercube(uint32_t dim) {
+    return Graph {1u << dim, mkHypercubeEdges(dim) };
+}
+
+Graph Graph::tesselation(uint32_t n) {
     std::vector<Edge> edges;
     uint32_t prevNode = 0;
     uint32_t currentNode = 1;
@@ -77,15 +80,15 @@ GraphShape GraphShape::tesselation(uint32_t n) {
         currentNode ++;
     }
 
-    return GraphShape {currentNode, edges};
+    return Graph {currentNode, edges};
 }
 
-GraphShape GraphShape::repeat(GraphShape shape, uint32_t k) {
-    const uint32_t n = shape.num_vertices;
+Graph Graph::repeat(Graph gr, uint32_t k) {
+    const uint32_t n = gr.num_vertices;
     const uint32_t num_vertices = n * k;
-    std::vector<Edge> edges = std::move(shape.edges);
+    std::vector<Edge> edges = std::move(gr.edges);
     const uint32_t ne = edges.size();
-    edges.reserve(shape.edges.size() * k);
+    edges.reserve(gr.edges.size() * k);
     for (uint32_t i = 1; i < k; ++ i) {
         for (uint32_t j = 0; j < ne; ++ j) {
             edges.emplace_back(
@@ -94,10 +97,10 @@ GraphShape GraphShape::repeat(GraphShape shape, uint32_t k) {
         }
     }
 
-    return GraphShape {num_vertices, edges};
+    return Graph {num_vertices, edges};
 }
 
-GraphShape GraphShape::kneser(uint32_t n, uint32_t k) {
+Graph Graph::kneser(uint32_t n, uint32_t k) {
     assert (n > k);
 
     const auto vec = choose(n, k);
@@ -108,38 +111,38 @@ GraphShape GraphShape::kneser(uint32_t n, uint32_t k) {
             if ((vec[i] & vec[j]) == 0)
                 edges.emplace_back(i, j);
 
-    return GraphShape {num_vertices, edges};
+    return Graph {num_vertices, edges};
 }
 
-GraphShape GraphShape::triangles(uint32_t num) {
-    return GraphShape::repeat(GraphShape::circle(3), num);
+Graph Graph::triangles(uint32_t num) {
+    return Graph::repeat(Graph::circle(3), num);
 }
 
-GraphShape GraphShape::lines(uint32_t num) {
+Graph Graph::lines(uint32_t num) {
     const uint32_t num_vertices = 2 * num;
     std::vector<Edge> edges;
     for (uint32_t i = 0; i < num_vertices; i += 2) {
         edges.emplace_back(i, i + 1);
     }
 
-    return GraphShape {num_vertices, edges};
+    return Graph {num_vertices, edges};
 }
 
-GraphShape GraphShape::line(uint32_t num) {
+Graph Graph::line(uint32_t num) {
     const uint32_t num_vertices = num;
     std::vector<Edge> edges;
     for (uint32_t i = 1; i < num_vertices; ++ i) {
         edges.emplace_back(i - 1, i);
     }
 
-    return GraphShape {num_vertices, edges};
+    return Graph {num_vertices, edges};
 }
 
-GraphShape GraphShape::points(uint32_t num) {
-    return GraphShape {num, std::vector<Edge>{}};
+Graph Graph::points(uint32_t num) {
+    return Graph {num, std::vector<Edge>{}};
 }
 
-GraphShape GraphShape::tree(uint32_t levels, uint32_t k) {
+Graph Graph::tree(uint32_t levels, uint32_t k) {
     uint32_t prev = 0;
     uint32_t current = 1;
     uint32_t levelSize = 1;
@@ -155,10 +158,10 @@ GraphShape GraphShape::tree(uint32_t levels, uint32_t k) {
         levelSize = current - prev;
     }
     
-    return GraphShape {current, edges};
+    return Graph {current, edges};
 }
 
-GraphShape GraphShape::grid(uint32_t width, uint32_t height) {
+Graph Graph::grid(uint32_t width, uint32_t height) {
     assert (width > 0 && height > 0);
 
     const auto mkCoord = [width](uint32_t x, uint32_t y) {
@@ -175,18 +178,18 @@ GraphShape GraphShape::grid(uint32_t width, uint32_t height) {
         }
     }
 
-    return GraphShape {num_vertices, edges};
+    return Graph {num_vertices, edges};
 }
 
-GraphShape GraphShape::circle(uint32_t n) {
+Graph Graph::circle(uint32_t n) {
     std::vector<Edge> edges;
     for (uint32_t i = 0; i < n; ++ i)
         edges.emplace_back(i, (i + 1) % n);
     
-    return GraphShape {n, edges};
+    return Graph {n, edges};
 }
 
-GraphShape GraphShape::ladder(uint32_t height, uint32_t n) {
+Graph Graph::ladder(uint32_t height, uint32_t n) {
     const uint32_t num_vertices = height * n;
     std::vector<Edge> edges;
     for (uint32_t h = 0; h < height; ++ h) {
@@ -197,12 +200,12 @@ GraphShape GraphShape::ladder(uint32_t height, uint32_t n) {
         }
     }
 
-    return GraphShape {num_vertices, edges};
+    return Graph {num_vertices, edges};
 }
 
 // Barabási–Albert model (with m = 1 and m0 = 1)
 template <typename UniformSampler>
-GraphShape GraphShape::ba1Model(uint32_t n, UniformSampler sample01) {
+Graph Graph::ba1Model(uint32_t n, UniformSampler sample01) {
 
     std::vector<uint32_t> degrees (n, 0);
     std::vector<Edge> edges;
@@ -230,12 +233,12 @@ GraphShape GraphShape::ba1Model(uint32_t n, UniformSampler sample01) {
         }
     }
 
-    return GraphShape {n, edges};
+    return Graph {n, edges};
 }
 
 // Erdős–Rényi model
 template <typename Sampler>
-GraphShape GraphShape::erModel(uint32_t n, Sampler sampler) {
+Graph Graph::erModel(uint32_t n, Sampler sampler) {
     std::vector<Edge> edges;
     for (uint32_t i = 0; i < n; ++ i) {
         for (uint32_t j = i + 1; j < n; ++ j) {
@@ -245,5 +248,5 @@ GraphShape GraphShape::erModel(uint32_t n, Sampler sampler) {
         }
     }
 
-    return GraphShape {n, edges};
+    return Graph {n, edges};
 }

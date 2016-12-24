@@ -72,7 +72,7 @@ void drawGraphInstance(const GraphInstance& inst,
 
     // Draw lines:
     cairo_set_source_rgb(cr, 0, 0, 0);
-    for (auto edge : inst.shape->edges) {
+    for (auto edge : inst.gr->edges) {
         const auto p1 = inst.positions[edge.source];
         const auto p2 = inst.positions[edge.target];
         cairo_move_to(cr, p1.x, p1.y);

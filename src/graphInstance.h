@@ -1,21 +1,22 @@
 #pragma once
 
 #include <vector>
-#include "graphShape.h"
+
+#include "graph.h"
 #include "vec2.h"
 
 // TODO: better name
 struct GraphInstance {
-    const GraphShape* shape;
+    const Graph* gr;
     std::vector<vec2f> positions;
     std::vector<float> energies;
     float totalEnergy;
 
-    GraphInstance(const GraphShape& s, std::vector<vec2f> verts);
+    GraphInstance(const Graph& s, std::vector<vec2f> verts);
 
     // TODO: result either delta or new energy
     void update(uint32_t v, vec2f coord);
-    static GraphInstance randomised(const GraphShape& shape);
+    static GraphInstance randomised(const Graph& gr);
 
     float vertSqrDist(uint32_t s, uint32_t t) const;
 
