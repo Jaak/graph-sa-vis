@@ -10,9 +10,8 @@
 template <typename Iter>
 typename std::iterator_traits<Iter>::value_type variance(Iter begin, Iter end) {
     const auto size = std::distance(begin, end);
-    const auto iSize = 1.0 / size;
-    const auto mean = iSize * std::accumulate(begin, end, 0.0);
-    const auto sqrMean = iSize * std::inner_product(begin, end, begin, 0.0);
+    const auto mean = std::accumulate(begin, end, 0.0f) / size;
+    const auto sqrMean = std::inner_product(begin, end, begin, 0.0f) / size;
     const auto variance = sqrMean - mean*mean;
     return variance;
 }
@@ -62,7 +61,7 @@ float GraphInstance::edgeEnergy(Edge e) const {
         const auto p2 = positions[e2.source];
         const auto q2 = positions[e2.target];
         if (intersects(p1, q1, p2, q2)) {
-            energy += 0.5*CrossingWeight;
+            energy += 0.5f*CrossingWeight;
         }
     }
 
@@ -70,18 +69,18 @@ float GraphInstance::edgeEnergy(Edge e) const {
 }
 
 float GraphInstance::vertexEnergy(uint32_t v) const {
-    float energy = 0;
+    float energy = 0.0f;
 
-    if (ClosenessWeight > 0) {
-        const auto vertWeight = 0.5 * ClosenessWeight / gr->num_vertices;
+    if (ClosenessWeight > 0.0f) {
+        const auto vertWeight = 0.5f * ClosenessWeight / gr->num_vertices;
         for (uint32_t i = 0; i < gr->num_vertices; ++ i) {
             if (i != v) {
-                energy += vertWeight / (0.001 + vertSqrDist(v, i));
+                energy += vertWeight / (0.001f + vertSqrDist(v, i));
             }
         }
     }
 
-    if (EdgeFromVertexDistanceWeight > 0) {
+    if (EdgeFromVertexDistanceWeight > 0.0f) {
         for (auto edge : gr->edges) {
             if (edge.source == v || edge.target == v)
                 continue;
@@ -89,7 +88,7 @@ float GraphInstance::vertexEnergy(uint32_t v) const {
             const auto sqrDist = sqrDistanceFromLine(
                 positions[edge.source], positions[edge.target], positions[v]);
             if (sqrDist) {
-                energy += EdgeFromVertexDistanceWeight / (0.001 + *sqrDist);
+                energy += EdgeFromVertexDistanceWeight / (0.001f + *sqrDist);
             }
         }
     }
@@ -100,22 +99,23 @@ float GraphInstance::vertexEnergy(uint32_t v) const {
     const auto n = end - begin;
 
     for (uint32_t i = begin; i < end; ++ i) {
-        energy += 0.5*edgeEnergy(Edge(v, gr->neighbours[i]));
+        energy += 0.5f*edgeEnergy(Edge(v, gr->neighbours[i]));
     }
 
-    if (AngleWeight > 0 && n >= 2) {
+    if (AngleWeight > 0.0f && n >= 2) {
+        constexpr float DOUBLE_PI = 2*M_PI;
         const auto p0 = positions[v];
         const auto p1 = positions[gr->neighbours[begin]];
         const auto u = normalised(p1 - p0);
 
         std::vector<float> angles;
         angles.reserve(n);
-        angles.push_back(2*M_PI);
+        angles.push_back(DOUBLE_PI);
         for (uint32_t j = begin + 1; j < end; ++ j) {
             const auto pj = positions[gr->neighbours[j]];
             const auto v = normalised(pj - p0);
             auto a = std::atan2(cross(u, v) , dot(u, v));
-            if (a < 0) a += 2*M_PI;
+            if (a < 0.0f) a += DOUBLE_PI;
             angles.push_back(a);
         }
         

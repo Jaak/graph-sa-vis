@@ -54,27 +54,27 @@ inline boost::optional<T> sqrDistanceFromLine(vec2<T> p1, vec2<T> p2, vec2<T> q)
     
     auto v1 = q - p1;
     const auto lSqr = sqrlen(v1);
-    if (lSqr == 0.0)
+    if (lSqr == T(0.0))
         return boost::none;
 
     v1 = v1 / std::sqrt(lSqr);
     const auto cosA = dot(u, v1);
-    if (cosA < 0.0 || cosA > 1.0)
+    if (cosA < T(0.0) || cosA > T(1.0))
         return boost::none;
 
     const auto v2 = normalised(q - p2);
     const auto cosB = dot(-u, v2);
-    if (cosB < 0.0 || cosB > 1.0)
+    if (cosB < T(0.0) || cosB > T(1.0))
         return boost::none;
 
-    return lSqr * (1 - cosA*cosA);
+    return lSqr * (T(1.0) - cosA*cosA);
 }
 
 template <typename T>
 inline bool intersects(vec2<T> p1, vec2<T> q1, vec2<T> p2, vec2<T> q2) {
     const auto orientation = [](vec2<T> p, vec2<T> q, vec2<T> r) {
         const auto t = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-        return t == 0 ? 0 : (t > 0 ? 1 : 2); ;
+        return t == T(0.0) ? 0 : (t > T(0.0) ? 1 : 2); ;
     };
 
     const auto onSegment = [](vec2<T> p, vec2<T> q, vec2<T> r) {

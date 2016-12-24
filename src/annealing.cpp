@@ -38,7 +38,7 @@ anneal_result anneal(GraphInstance s) {
     auto e = s.totalEnergy;
     auto T = InitialTemperature;
     const auto n = s.gr->num_vertices;
-    float R = 2.0f * std::min(BoundingBoxHeight, BoundingBoxWidth) / std::sqrt(n);
+    float R = 2.0f * std::fmin(BoundingBoxHeight, BoundingBoxWidth) / std::sqrtf(n);
 
     std::cout << "InitialEnergy: " << e << std::endl;
 
@@ -58,13 +58,14 @@ anneal_result anneal(GraphInstance s) {
 
     const auto limit = n * StepFactor;
     size_t stageCount = 0;
+    size_t totalCount = 0;
     const auto startTime = steady_clock::now();
 
     for (;;) {
         uint32_t n = 0;
         float mean = 0.0f;
         float M2 = 0.0f;
-        for (uint step = 0; step < limit; ++ step) {
+        for (uint step = 0; step < limit; ++ step, ++ totalCount) {
             auto s1 = s.neighbour(R);
             const auto e1 = s1.totalEnergy;
             if (acceptanceP(e, e1, T) >= randFloat(0, 1)) {
@@ -99,6 +100,7 @@ anneal_result anneal(GraphInstance s) {
     std::cout << "HistorySize:   " << energies.size() << std::endl;
     std::cout << "FinalEnergy:   " << e << std::endl;
     std::cout << "Time:          " << timeDelta.count() << "s" << std::endl;
+    std::cout << "Updates/s:     " << totalCount / timeDelta.count() << std::endl;
     return {s, energies};
 }
 
