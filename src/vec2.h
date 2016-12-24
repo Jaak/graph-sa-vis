@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cmath>
 #include <boost/optional.hpp>
+#include <cmath>
 #include <type_traits>
 
 template <
