@@ -65,10 +65,10 @@ anneal_result anneal(GraphInstance s) {
         float mean = 0.0f;
         float M2 = 0.0f;
         for (uint step = 0; step < limit; ++ step) {
-            const auto s1 = neighbour(s, R);
+            auto s1 = s.neighbour(R);
             const auto e1 = s1.totalEnergy;
             if (acceptanceP(e, e1, T) >= randFloat(0, 1)) {
-                s = s1;
+                s = std::move(s1);
                 e = e1;
             }
 

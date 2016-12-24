@@ -142,19 +142,20 @@ GraphInstance GraphInstance::randomised(const Graph& gr) {
     return GraphInstance {gr, coords};
 }
 
-GraphInstance neighbour(GraphInstance inst, float radius) {
-    const auto i = randInt(0, inst.positions.size() - 1);
-    auto& vertex = inst.positions[i];
+GraphInstance GraphInstance::neighbour(float radius) const {
+    GraphInstance result = *this;
+    const auto i = randInt(0, result.positions.size() - 1);
+    auto& vertex = result.positions[i];
     for (;;) {
         const auto d = radius * sampleCircle();
         const auto p = vertex + d;
         if (p.x >= BoxPadding && p.x + BoxPadding < BoundingBoxWidth &&
             p.y >= BoxPadding && p.y + BoxPadding < BoundingBoxHeight)
         {
-            inst.update(i, p);
+            result.update(i, p);
             break;
         }
     }
 
-    return inst;
+    return result;
 }

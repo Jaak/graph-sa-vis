@@ -12,6 +12,8 @@ struct GraphInstance {
     std::vector<float> energies;
     float totalEnergy;
 
+public: /* Methods: */
+
     GraphInstance(const Graph& s, std::vector<vec2f> verts);
 
     // TODO: result either delta or new energy
@@ -23,8 +25,6 @@ struct GraphInstance {
     float edgeEnergy(Edge e) const;
 
     float vertexEnergy(uint32_t v) const;
+
+    GraphInstance neighbour(float radius) const;
 };
-
-
-// TODO: move to a member
-GraphInstance neighbour(GraphInstance inst, float radius);
