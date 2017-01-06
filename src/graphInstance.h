@@ -18,6 +18,7 @@ public: /* Types: */
     };
 
 public: /* Fields: */
+
     const Graph* gr;
     std::vector<vec2f> positions;
     std::vector<float> energies;
@@ -32,8 +33,9 @@ public: /* Methods: */
     void commit(const Delta& delta);
 
 private: /* Methods: */
+
     float vertSqrDist(uint32_t s, uint32_t t) const;
-    float edgeEnergy(Edge e) const;
+    float edgeEnergy(uint32_t source, uint32_t target) const;
     float vertexEnergy(uint32_t v) const;
     float computeEnergyDelta(uint32_t v, vec2f coord);
 };

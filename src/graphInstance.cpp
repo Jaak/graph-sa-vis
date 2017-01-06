@@ -33,24 +33,24 @@ float GraphInstance::vertSqrDist(uint32_t s, uint32_t t) const {
     return sqrdist(positions[s], positions[t]);
 }
 
-float GraphInstance::edgeEnergy(Edge e) const {
+float GraphInstance::edgeEnergy(uint32_t source, uint32_t target) const {
     float energy = 0;
 
     const auto edgeWeight = EdgeDistanceWeight * gr->num_vertices / gr->edges.size();
-    energy += edgeWeight*vertSqrDist(e.source, e.target);
+    energy += edgeWeight*vertSqrDist(source, target);
 
     for (size_t j = 0; j < gr->edges.size(); ++ j) {
-        const auto e2 = gr->edges[j];
-        if (e.source == e2.source || e.source == e2.target ||
-            e.target == e2.source || e.target == e2.target) {
+        const auto e = gr->edges[j];
+        if (source == e.source || source == e.target ||
+            target == e.source || target == e.target) {
             continue;
         }
 
 
-        const auto p1 = positions[e.source];
-        const auto q1 = positions[e.target];
-        const auto p2 = positions[e2.source];
-        const auto q2 = positions[e2.target];
+        const auto p1 = positions[source];
+        const auto q1 = positions[target];
+        const auto p2 = positions[e.source];
+        const auto q2 = positions[e.target];
         if (intersects(p1, q1, p2, q2)) {
             energy += 0.5f*CrossingWeight;
         }
@@ -90,7 +90,7 @@ float GraphInstance::vertexEnergy(uint32_t v) const {
     const auto n = end - begin;
 
     for (uint32_t i = begin; i < end; ++ i) {
-        energy += 0.5f*edgeEnergy(Edge(v, gr->neighbours[i]));
+        energy += 0.5f*edgeEnergy(v, gr->neighbours[i]);
     }
 
     if (AngleWeight > 0.0f && n >= 2) {
