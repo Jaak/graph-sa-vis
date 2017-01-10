@@ -1,7 +1,6 @@
 #include "random.h"
 
 #include <random>
-#include <iostream>
 
 namespace /* anonymous */ {
 
@@ -69,8 +68,6 @@ int randInt(int low, int high) {
     uint64_t mask = maxVal;
     for (int i = 1; i < 64; i *= 2)
         mask = mask | (mask >> i);
-
-    std::cout << maxVal << "    " << mask << std::endl;
 
     for (;;) {
         const uint64_t val = next() & mask;
